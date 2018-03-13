@@ -110,7 +110,7 @@ public class Field {
 
 }
 
-class Coordinate {
+final class Coordinate {
     final int x;
     final int y;
 

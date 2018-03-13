@@ -3,6 +3,8 @@ package com.fyrkantig.pacman;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadLocalRandom;
+
 import static java.util.concurrent.TimeUnit.*;
 
 
@@ -41,11 +43,16 @@ public class Enemy extends FieldObject implements Runnable {
 
     private void searchNewRoute() {
         LinkedList<MoveDirection> validDirections = field.getValidDirections(xCoord, yCoord);
-        if (validDirections.contains(currentDirection)) {
+        // Check needed for NPCs closing each other in
+        if (validDirections.contains(currentDirection) && validDirections.size() < 3) {
             move(currentDirection);
         } else {
-            Collections.shuffle(validDirections);
-            currentDirection = validDirections.get(0);
+            if (currentDirection != null && validDirections.contains(currentDirection.opposite())
+                    && validDirections.size() > 1) {
+                            validDirections.remove(currentDirection.opposite());
+            }
+            int randomDirection = ThreadLocalRandom.current().nextInt(validDirections.size());
+            currentDirection = validDirections.get(randomDirection);
             move(currentDirection);
         }
     }
@@ -73,5 +80,15 @@ public class Enemy extends FieldObject implements Runnable {
 }
 
 enum MoveDirection {
-    UP, DOWN, LEFT, RIGHT
+    UP, DOWN, LEFT, RIGHT;
+
+    final MoveDirection opposite() {
+        switch (this) {
+            case UP: return DOWN;
+            case DOWN: return UP;
+            case LEFT: return RIGHT;
+            case RIGHT: return LEFT;
+            default: return null;
+        }
+    }
 }
