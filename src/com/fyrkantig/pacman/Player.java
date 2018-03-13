@@ -12,25 +12,34 @@ public class Player extends FieldObject {
     public Player(Field field) {
         super(Style.PLAYER);
         this.field = field;
-        Coordinate coord = field.getPlayerCoordinates();
+        Coordinate coord = field.getPlayerSpawnPoint();
         xCoord = coord.x;
         yCoord = coord.y;
+        field.createObject(xCoord, yCoord, this);
     }
 
     private void moveUp() {
-        System.out.println("UP");
+        if (field.moveObject(xCoord, yCoord, xCoord, yCoord - 1, this)) {
+            yCoord --;
+        }
     }
 
     private void moveDown() {
-        System.out.println("DOWN");
+        if (field.moveObject(xCoord, yCoord, xCoord, yCoord + 1, this)) {
+            yCoord ++;
+        }
     }
 
     private void moveLeft() {
-        System.out.println("LEFT");
+        if (field.moveObject(xCoord, yCoord, xCoord - 1, yCoord, this)) {
+            xCoord --;
+        }
     }
 
     private void moveRight() {
-        System.out.println("RIGHT");
+        if (field.moveObject(xCoord, yCoord, xCoord + 1, yCoord, this)) {
+            xCoord ++;
+        }
     }
 
     private void move(char keyPressed) {

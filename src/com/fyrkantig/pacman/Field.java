@@ -12,13 +12,13 @@ public class Field {
 
     private final int rows = 31;
     private final int columns = 53;
-    private FieldObject [][] map;
+    private FieldObject[][] map;
     private Terminal term = new Terminal();
 
     private LinkedList<Coordinate> spawnPoints = new LinkedList<>();
     private Coordinate playerSpawnPoint;
 
-    public Field (){
+    public Field() {
         map = new FieldObject[rows][columns];
         initMap();
     }
@@ -30,10 +30,10 @@ public class Field {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-        while(sc.hasNextLine()) {
-            for (int i=0; i<map.length; i++) {
+        while (sc.hasNextLine()) {
+            for (int i = 0; i < map.length; i++) {
                 String[] line = sc.nextLine().trim().split(" ");
-                for (int j=0; j<line.length; j++) {
+                for (int j = 0; j < line.length; j++) {
                     switch (line[j]) {
                         case "0":
                             map[i][j] = new FieldObject(Style.WALL);
@@ -59,7 +59,7 @@ public class Field {
         Style object = map[y][x].getStyle();
         term.setFgColor(object.fgColor);
         term.setBgColor(object.bgColor);
-        term.setChar(x+1, y+1, object.chr);
+        term.setChar(x + 1, y + 1, object.chr);
 
     }
 
@@ -71,44 +71,41 @@ public class Field {
         return playerSpawnPoint;
     }
 
-    public void createObject(int x, int y, FieldObject obj) {
+    public synchronized void createObject(int x, int y, FieldObject obj) {
         // Check here
         map[y][x] = obj;
         renderObject(x, y);
     }
 
-    public boolean moveObject(int prevX, int prevY, int nextX, int nextY, FieldObject obj) {
+    public synchronized boolean moveObject(int prevX, int prevY, int nextX, int nextY, FieldObject obj) {
         // Check here
-        if (!checkPosition(nextX, nextY, obj)) {return false;}
+        if (!checkPosition(nextX, nextY)) {
+            return false;
+        }
         createObject(prevX, prevY, new FieldObject(Style.EMPTY));  // Pop coin back here
+        FieldObject overriddenObject = map[nextY][nextX];
         createObject(nextX, nextY, obj);
+
+        if (overriddenObject.getStyle() == Style.PLAYER) {
+            ((Player)overriddenObject).terminate();
+        }
+        // INSERT COIN LOGIC HERE
         return true;
     }
 
-    private boolean checkPosition(int x, int y, FieldObject obj) {
-        if ((x >= 0 && x < columns) && (y >= 0 && y < rows)) {
+    private boolean checkPosition(int x, int y) {
+        return (x >= 0 && x < columns)
+                && (y >= 0 && y < rows)
+                && (map[y][x].getStyle() != Style.ENEMY && map[y][x].getStyle() != Style.WALL);
+    }
 
-            switch (map[y][x].getStyle()) {
-                case EMPTY:
-                    return true;
-                case WALL:
-                    return false;
-                case ENEMY:
-                    if (obj.getStyle() == Style.PLAYER) {
-                        ((Player)obj).terminate();
-                    }
-                    return false;
-                case PLAYER:
-                    if (obj.getStyle() == Style.ENEMY) {
-                        ((Player)map[y][x]).terminate();
-                    }
-                    return true;
-                case COIN:
-                    return true;
-            }
-
-        }
-        return false;
+    public synchronized LinkedList<MoveDirection> getValidDirections(int x, int y) {
+        LinkedList<MoveDirection> validDirections = new LinkedList<>();
+        if (checkPosition(x, y - 1 )) {validDirections.add(MoveDirection.UP);}
+        if (checkPosition(x, y + 1 )) {validDirections.add(MoveDirection.DOWN);}
+        if (checkPosition(x - 1, y )) {validDirections.add(MoveDirection.LEFT);}
+        if (checkPosition(x + 1, y )) {validDirections.add(MoveDirection.RIGHT);}
+        return validDirections;
     }
 
 }
