@@ -70,6 +70,47 @@ public class Field {
     public Coordinate getPlayerSpawnPoint() {
         return playerSpawnPoint;
     }
+
+    public void createObject(int x, int y, FieldObject obj) {
+        // Check here
+        map[y][x] = obj;
+        renderObject(x, y);
+    }
+
+    public boolean moveObject(int prevX, int prevY, int nextX, int nextY, FieldObject obj) {
+        // Check here
+        if (!checkPosition(nextX, nextY, obj)) {return false;}
+        createObject(prevX, prevY, new FieldObject(Style.EMPTY));  // Pop coin back here
+        createObject(nextX, nextY, obj);
+        return true;
+    }
+
+    private boolean checkPosition(int x, int y, FieldObject obj) {
+        if ((x >= 0 && x < columns) && (y >= 0 && y < rows)) {
+
+            switch (map[y][x].getStyle()) {
+                case EMPTY:
+                    return true;
+                case WALL:
+                    return false;
+                case ENEMY:
+                    if (obj.getStyle() == Style.PLAYER) {
+                        ((Player)obj).terminate();
+                    }
+                    return false;
+                case PLAYER:
+                    if (obj.getStyle() == Style.ENEMY) {
+                        ((Player)map[y][x]).terminate();
+                    }
+                    return true;
+                case COIN:
+                    return true;
+            }
+
+        }
+        return false;
+    }
+
 }
 
 class Coordinate {
