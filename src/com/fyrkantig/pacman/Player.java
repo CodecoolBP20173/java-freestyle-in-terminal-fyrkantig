@@ -1,11 +1,12 @@
 package com.fyrkantig.pacman;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Player extends FieldObject {
 
-    private int xCoord;
-    private int yCoord;
+    private AtomicInteger xCoord;
+    private AtomicInteger yCoord;
     private Field field;
     private boolean isAlive = true;
 
@@ -13,32 +14,32 @@ public class Player extends FieldObject {
         super(Style.PLAYER);
         this.field = field;
         Coordinate coord = field.getPlayerSpawnPoint();
-        xCoord = coord.x;
-        yCoord = coord.y;
-        field.createObject(xCoord, yCoord, this);
+        xCoord = new AtomicInteger(coord.x);
+        yCoord = new AtomicInteger(coord.y);
+        field.createObject(xCoord.get(), yCoord.get(), this);
     }
 
     private void moveUp() {
-        if (field.moveObject(xCoord, yCoord, xCoord, yCoord - 1, this)) {
-            yCoord --;
+        if (field.moveObject(xCoord.get(), yCoord.get(), xCoord.get(), yCoord.get() - 1, this)) {
+            yCoord.decrementAndGet();
         }
     }
 
     private void moveDown() {
-        if (field.moveObject(xCoord, yCoord, xCoord, yCoord + 1, this)) {
-            yCoord ++;
+        if (field.moveObject(xCoord.get(), yCoord.get(), xCoord.get(), yCoord.get() + 1, this)) {
+            yCoord.incrementAndGet();
         }
     }
 
     private void moveLeft() {
-        if (field.moveObject(xCoord, yCoord, xCoord - 1, yCoord, this)) {
-            xCoord --;
+        if (field.moveObject(xCoord.get(), yCoord.get(), xCoord.get() - 1, yCoord.get(), this)) {
+            xCoord.decrementAndGet();
         }
     }
 
     private void moveRight() {
-        if (field.moveObject(xCoord, yCoord, xCoord + 1, yCoord, this)) {
-            xCoord ++;
+        if (field.moveObject(xCoord.get(), yCoord.get(), xCoord.get() + 1, yCoord.get(), this)) {
+            xCoord.incrementAndGet();
         }
     }
 
@@ -65,6 +66,14 @@ public class Player extends FieldObject {
     public synchronized void win() {}
 
     public boolean isAlive() {return isAlive;}
+
+    public int getxCoord() {
+        return xCoord.get();
+    }
+
+    public int getyCoord() {
+        return yCoord.get();
+    }
 
     public void startGame() {
         while (isAlive) {

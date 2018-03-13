@@ -13,29 +13,31 @@ public class Enemy extends FieldObject implements Runnable {
     private int xCoord;
     private int yCoord;
     private Field field;
+    private Player target;
     private MoveDirection currentDirection;
 
     private static ScheduledThreadPoolExecutor enemies;
     private static final int speed = 200;
     private static final int initialDelay = 1000;
 
-    public static ScheduledThreadPoolExecutor releaseEnemies(Field field) {
+    public static ScheduledThreadPoolExecutor releaseEnemies(Field field, Player target) {
         LinkedList<Coordinate> spawnPoints = field.getSpawnPoints();
         int numberOfEnemies = spawnPoints.size();
         enemies = new ScheduledThreadPoolExecutor(numberOfEnemies);
 
         for (int i = 0; i < numberOfEnemies; i++) {
             Coordinate coord = spawnPoints.get(i);
-            enemies.scheduleAtFixedRate(new Enemy(coord.x, coord.y, field), initialDelay, speed, MILLISECONDS);
+            enemies.scheduleAtFixedRate(new Enemy(coord.x, coord.y, field, target), initialDelay, speed, MILLISECONDS);
         }
         return enemies;
     }
 
-    public Enemy(int x, int y, Field field) {
+    public Enemy(int x, int y, Field field, Player target) {
         super(Style.ENEMY);
         xCoord = x;
         yCoord = y;
         this.field = field;
+        this.target = target;
         field.createObject(x, y, this);
         searchNewRoute();
         // Add dinamically to pool
@@ -57,6 +59,22 @@ public class Enemy extends FieldObject implements Runnable {
         }
     }
 
+    private void seekPlayer(LinkedList<MoveDirection> validDirections) {
+        LinkedList<MoveDirection> preferredDirections = new LinkedList<>();
+        if (target.getyCoord() < yCoord) {preferredDirections.add(MoveDirection.UP);}
+            else {preferredDirections.add(MoveDirection.DOWN);}
+        if (target.getxCoord() < xCoord) {preferredDirections.add(MoveDirection.LEFT);}
+            else {preferredDirections.add(MoveDirection.RIGHT);}
+
+        preferredDirections.retainAll(validDirections);
+        LinkedList<MoveDirection> chosenDirectionList = preferredDirections.size() != 0 ?
+                preferredDirections : validDirections;
+
+        int randomDirection = ThreadLocalRandom.current().nextInt(chosenDirectionList.size());
+        currentDirection = chosenDirectionList.get(randomDirection);
+        move(currentDirection);
+    }
+
     private void move(MoveDirection directino) {
         switch (directino) {
             case UP:
@@ -75,7 +93,9 @@ public class Enemy extends FieldObject implements Runnable {
 
     @Override
     public void run() {
-        searchNewRoute();
+        LinkedList<MoveDirection> validDirections = field.getValidDirections(xCoord, yCoord);
+        seekPlayer(validDirections);
+        // searchNewRoute();
     }
 }
 

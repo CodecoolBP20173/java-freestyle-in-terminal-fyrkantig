@@ -7,9 +7,9 @@ public class Main {
 
     public static void main(String[] args) {
 	    Field field = new Field();
-        ScheduledThreadPoolExecutor enemies = Enemy.releaseEnemies(field);
-        Player pc = new Player(field);
-        pc.startGame();
+        Player player = new Player(field);
+        ScheduledThreadPoolExecutor enemies = Enemy.releaseEnemies(field, player);
+        player.startGame();
         enemies.shutdown();
     }
 }
