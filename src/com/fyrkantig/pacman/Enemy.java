@@ -15,18 +15,22 @@ public class Enemy extends FieldObject implements Runnable {
     private static final int speed = 200;
     private static final int initialDelay = 1000;
 
-    public static ScheduledThreadPoolExecutor releaseEnemies(Field field, int numberOfEnemies) {
-        // noEnemies => public final variable spawnPoints from Field
+    public static ScheduledThreadPoolExecutor releaseEnemies(Field field) {
+        LinkedList<Coordinate> spawnPoints = field.getSpawnCoordinates();
+        int numberOfEnemies = spawnPoints.size();
         enemies = new ScheduledThreadPoolExecutor(numberOfEnemies);
+
         for (int i = 0; i < numberOfEnemies; i++) {
-            enemies.scheduleAtFixedRate(new Enemy(field), initialDelay, speed, MILLISECONDS);
+            int coord = spawnPoints.get(i);
+            enemies.scheduleAtFixedRate(new Enemy(coord.x, coord.y, field), initialDelay, speed, MILLISECONDS);
         }
         return enemies;
     }
 
-    public Enemy(Field field) {
+    public Enemy(int x, int y, Field field) {
         super(Style.ENEMY);
-        // Get spawn point coordinates from Field
+        xCoord = x;
+        yCoord = y;
         this.field = field;
         searchNewRoute();
         // Add dinamically to pool
@@ -70,7 +74,6 @@ public class Enemy extends FieldObject implements Runnable {
                 moveRight();
         }
         searchNewRoute();
-        System.out.println("BOOM");
     }
 }
 

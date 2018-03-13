@@ -1,15 +1,12 @@
 package com.fyrkantig.pacman;
 
 
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+
 public class Main {
 
     public static void main(String[] args) {
-        Enemy.releaseEnemies(new Field(), 10);
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        ScheduledThreadPoolExecutor enemies = Enemy.releaseEnemies(new Field(), 4);
         Player pc = new Player(new Field());
         pc.startGame();
     }

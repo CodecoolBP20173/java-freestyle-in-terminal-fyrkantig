@@ -11,8 +11,10 @@ public class Player extends FieldObject {
 
     public Player(Field field) {
         super(Style.PLAYER);
-        // Get spawn coordinates from Field
         this.field = field;
+        Coordinate coord = field.getPlayerCoordinates();
+        xCoord = coord.x;
+        yCoord = coord.y;
     }
 
     private void moveUp() {
