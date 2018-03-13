@@ -11,11 +11,11 @@ import java.util.Scanner;
 public class Field {
 
     private final int rows = 31;
-    private final int columns = 28;
+    private final int columns = 53;
     private FieldObject [][] map;
     private Terminal term = new Terminal();
 
-    private LinkedList<Coordinate> spawnPoints;
+    private LinkedList<Coordinate> spawnPoints = new LinkedList<>();
     private Coordinate playerSpawnPoint;
 
     public Field (){
@@ -59,7 +59,7 @@ public class Field {
         Style object = map[y][x].getStyle();
         term.setFgColor(object.fgColor);
         term.setBgColor(object.bgColor);
-        term.setChar(x, y, object.chr);
+        term.setChar(x+1, y+1, object.chr);
 
     }
 
