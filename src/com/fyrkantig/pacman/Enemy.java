@@ -45,7 +45,7 @@ public class Enemy extends FieldObject implements Runnable {
 
     private void searchNewRoute() {
         LinkedList<MoveDirection> validDirections = field.getValidDirections(xCoord, yCoord);
-        // Check needed for NPCs closing each other in
+        if (validDirections.size() == 0) {return;}
         if (validDirections.contains(currentDirection) && validDirections.size() < 3) {
             move(currentDirection);
         } else {
