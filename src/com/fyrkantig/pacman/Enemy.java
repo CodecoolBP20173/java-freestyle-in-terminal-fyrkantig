@@ -53,13 +53,17 @@ public class Enemy extends FieldObject implements Runnable {
                     && validDirections.size() > 1) {
                             validDirections.remove(currentDirection.opposite());
             }
-            int randomDirection = ThreadLocalRandom.current().nextInt(validDirections.size());
-            currentDirection = validDirections.get(randomDirection);
+
+            LinkedList<MoveDirection> playerDirections = seekPlayer(validDirections);
+            LinkedList<MoveDirection> optimalDirections = playerDirections.size() > 0 ?
+                    playerDirections : validDirections;
+            int randomDirection = ThreadLocalRandom.current().nextInt(optimalDirections.size());
+            currentDirection = optimalDirections.get(randomDirection);
             move(currentDirection);
         }
     }
 
-    private void seekPlayer(LinkedList<MoveDirection> validDirections) {
+    private LinkedList<MoveDirection> seekPlayer(LinkedList<MoveDirection> validDirections) {
         LinkedList<MoveDirection> preferredDirections = new LinkedList<>();
         if (target.getyCoord() < yCoord) {preferredDirections.add(MoveDirection.UP);}
             else {preferredDirections.add(MoveDirection.DOWN);}
@@ -67,12 +71,7 @@ public class Enemy extends FieldObject implements Runnable {
             else {preferredDirections.add(MoveDirection.RIGHT);}
 
         preferredDirections.retainAll(validDirections);
-        LinkedList<MoveDirection> chosenDirectionList = preferredDirections.size() != 0 ?
-                preferredDirections : validDirections;
-
-        int randomDirection = ThreadLocalRandom.current().nextInt(chosenDirectionList.size());
-        currentDirection = chosenDirectionList.get(randomDirection);
-        move(currentDirection);
+        return preferredDirections;
     }
 
     private void move(MoveDirection directino) {
@@ -93,9 +92,7 @@ public class Enemy extends FieldObject implements Runnable {
 
     @Override
     public void run() {
-        LinkedList<MoveDirection> validDirections = field.getValidDirections(xCoord, yCoord);
-        seekPlayer(validDirections);
-        // searchNewRoute();
+        searchNewRoute();
     }
 }
 
