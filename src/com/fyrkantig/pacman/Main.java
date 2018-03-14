@@ -6,8 +6,10 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 public class Main {
 
     public static void main(String[] args) {
-        ScheduledThreadPoolExecutor enemies = Enemy.releaseEnemies(new Field(), 4);
-        Player pc = new Player(new Field());
-        pc.startGame();
+	    Field field = new Field();
+        Player player = new Player(field);
+        ScheduledThreadPoolExecutor enemies = Enemy.releaseEnemies(field, player);
+        player.startGame();
+        enemies.shutdown();
     }
 }

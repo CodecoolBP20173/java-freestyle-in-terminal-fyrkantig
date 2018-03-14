@@ -1,36 +1,46 @@
 package com.fyrkantig.pacman;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Player extends FieldObject {
 
-    private int xCoord;
-    private int yCoord;
+    private AtomicInteger xCoord;
+    private AtomicInteger yCoord;
     private Field field;
     private boolean isAlive = true;
 
     public Player(Field field) {
         super(Style.PLAYER);
         this.field = field;
-        Coordinate coord = field.getPlayerCoordinates();
-        xCoord = coord.x;
-        yCoord = coord.y;
+        Coordinate coord = field.getPlayerSpawnPoint();
+        xCoord = new AtomicInteger(coord.x);
+        yCoord = new AtomicInteger(coord.y);
+        field.createObject(xCoord.get(), yCoord.get(), this);
     }
 
     private void moveUp() {
-        System.out.println("UP");
+        if (field.moveObject(xCoord.get(), yCoord.get(), xCoord.get(), yCoord.get() - 1, this)) {
+            yCoord.decrementAndGet();
+        }
     }
 
     private void moveDown() {
-        System.out.println("DOWN");
+        if (field.moveObject(xCoord.get(), yCoord.get(), xCoord.get(), yCoord.get() + 1, this)) {
+            yCoord.incrementAndGet();
+        }
     }
 
     private void moveLeft() {
-        System.out.println("LEFT");
+        if (field.moveObject(xCoord.get(), yCoord.get(), xCoord.get() - 1, yCoord.get(), this)) {
+            xCoord.decrementAndGet();
+        }
     }
 
     private void moveRight() {
-        System.out.println("RIGHT");
+        if (field.moveObject(xCoord.get(), yCoord.get(), xCoord.get() + 1, yCoord.get(), this)) {
+            xCoord.incrementAndGet();
+        }
     }
 
     private void move(char keyPressed) {
@@ -56,6 +66,14 @@ public class Player extends FieldObject {
     public synchronized void win() {}
 
     public boolean isAlive() {return isAlive;}
+
+    public int getxCoord() {
+        return xCoord.get();
+    }
+
+    public int getyCoord() {
+        return yCoord.get();
+    }
 
     public void startGame() {
         while (isAlive) {

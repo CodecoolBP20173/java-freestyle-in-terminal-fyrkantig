@@ -1,6 +1,10 @@
 package com.fyrkantig.pacman;
 
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadLocalRandom;
+
 import static java.util.concurrent.TimeUnit.*;
 
 
@@ -9,74 +13,99 @@ public class Enemy extends FieldObject implements Runnable {
     private int xCoord;
     private int yCoord;
     private Field field;
+    private Player target;
     private MoveDirection currentDirection;
 
     private static ScheduledThreadPoolExecutor enemies;
     private static final int speed = 200;
     private static final int initialDelay = 1000;
 
-    public static ScheduledThreadPoolExecutor releaseEnemies(Field field) {
-        LinkedList<Coordinate> spawnPoints = field.getSpawnCoordinates();
+    public static ScheduledThreadPoolExecutor releaseEnemies(Field field, Player target) {
+        LinkedList<Coordinate> spawnPoints = field.getSpawnPoints();
         int numberOfEnemies = spawnPoints.size();
         enemies = new ScheduledThreadPoolExecutor(numberOfEnemies);
 
         for (int i = 0; i < numberOfEnemies; i++) {
-            int coord = spawnPoints.get(i);
-            enemies.scheduleAtFixedRate(new Enemy(coord.x, coord.y, field), initialDelay, speed, MILLISECONDS);
+            Coordinate coord = spawnPoints.get(i);
+            enemies.scheduleAtFixedRate(new Enemy(coord.x, coord.y, field, target), initialDelay, speed, MILLISECONDS);
         }
         return enemies;
     }
 
-    public Enemy(int x, int y, Field field) {
+    public Enemy(int x, int y, Field field, Player target) {
         super(Style.ENEMY);
         xCoord = x;
         yCoord = y;
         this.field = field;
+        this.target = target;
+        field.createObject(x, y, this);
         searchNewRoute();
         // Add dinamically to pool
     }
 
     private void searchNewRoute() {
-        // Call field method to check potential routes; gets back a LinkedList<Dir> and chooses 1;
-        // can only choose comingFrom if it's the only way -- aka turn back from a dead end
-        // ! modifies the currentDirection field
+        LinkedList<MoveDirection> validDirections = field.getValidDirections(xCoord, yCoord);
+        if (validDirections.size() == 0) {return;}
+        if (validDirections.contains(currentDirection) && validDirections.size() < 3) {
+            move(currentDirection);
+        } else {
+            if (currentDirection != null && validDirections.contains(currentDirection.opposite())
+                    && validDirections.size() > 1) {
+                            validDirections.remove(currentDirection.opposite());
+            }
+
+            LinkedList<MoveDirection> playerDirections = seekPlayer(validDirections);
+            LinkedList<MoveDirection> optimalDirections = playerDirections.size() > 0 ?
+                    playerDirections : validDirections;
+            int randomDirection = ThreadLocalRandom.current().nextInt(optimalDirections.size());
+            currentDirection = optimalDirections.get(randomDirection);
+            move(currentDirection);
+        }
     }
 
-    private void moveUp() {
-        // Call moveObject here
+    private LinkedList<MoveDirection> seekPlayer(LinkedList<MoveDirection> validDirections) {
+        LinkedList<MoveDirection> preferredDirections = new LinkedList<>();
+        if (target.getyCoord() < yCoord) {preferredDirections.add(MoveDirection.UP);}
+            else {preferredDirections.add(MoveDirection.DOWN);}
+        if (target.getxCoord() < xCoord) {preferredDirections.add(MoveDirection.LEFT);}
+            else {preferredDirections.add(MoveDirection.RIGHT);}
+
+        preferredDirections.retainAll(validDirections);
+        return preferredDirections;
     }
 
-    private void moveDown() {
-        // Call moveObject here
-    }
-
-    private void moveLeft() {
-        // Call moveObject here
-    }
-
-    private void moveRight() {
-        // Call moveObject here
+    private void move(MoveDirection directino) {
+        switch (directino) {
+            case UP:
+                field.moveObject(xCoord, yCoord, xCoord, --yCoord, this);
+                break;
+            case DOWN:
+                field.moveObject(xCoord, yCoord, xCoord, ++yCoord, this);
+                break;
+            case LEFT:
+                field.moveObject(xCoord, yCoord, --xCoord, yCoord, this);
+                break;
+            case RIGHT:
+                field.moveObject(xCoord, yCoord, ++xCoord, yCoord, this);
+        }
     }
 
     @Override
     public void run() {
-        switch (currentDirection) {
-            case UP:
-                moveUp();
-                break;
-            case DOWN:
-                moveDown();
-                break;
-            case LEFT:
-                moveLeft();
-                break;
-            case RIGHT:
-                moveRight();
-        }
         searchNewRoute();
     }
 }
 
 enum MoveDirection {
-    UP, DOWN, LEFT, RIGHT
+    UP, DOWN, LEFT, RIGHT;
+
+    final MoveDirection opposite() {
+        switch (this) {
+            case UP: return DOWN;
+            case DOWN: return UP;
+            case LEFT: return RIGHT;
+            case RIGHT: return LEFT;
+            default: return null;
+        }
+    }
 }
