@@ -15,9 +15,10 @@ public class Enemy extends FieldObject implements Runnable {
     private Field field;
     private Player target;
     private MoveDirection currentDirection;
+    private boolean isStandingOnCoin;
 
     private static ScheduledThreadPoolExecutor enemies;
-    private static final int speed = 200;
+    private static final int speed = 1000;
     private static final int initialDelay = 1000;
 
     public static ScheduledThreadPoolExecutor releaseEnemies(Field field, Player target) {
@@ -39,8 +40,15 @@ public class Enemy extends FieldObject implements Runnable {
         this.field = field;
         this.target = target;
         field.createObject(x, y, this);
-        searchNewRoute();
         // Add dinamically to pool
+    }
+
+    public boolean isStandingOnCoin() {
+        return isStandingOnCoin;
+    }
+
+    public void setStandingOnCoin(boolean standingOnCoin) {
+        isStandingOnCoin = standingOnCoin;
     }
 
     private void searchNewRoute() {

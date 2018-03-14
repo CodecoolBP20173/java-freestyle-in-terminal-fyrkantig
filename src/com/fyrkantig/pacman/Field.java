@@ -5,11 +5,14 @@ import com.fyrkantig.term.Terminal;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Scanner;
 
 public class Field {
 
+    private static final double COIN_RATIO = 0.30;
     private final int rows = 31;
     private final int columns = 53;
     private FieldObject[][] map;
@@ -17,19 +20,44 @@ public class Field {
 
     private LinkedList<Coordinate> spawnPoints = new LinkedList<>();
     private Coordinate playerSpawnPoint;
+    private int numberOfCoins;
 
     public Field() {
         map = new FieldObject[rows][columns];
         initMap();
     }
 
+    private LinkedList<CoinRegister> shuffleCoins() throws FileNotFoundException {
+        Scanner sc = new Scanner(new BufferedReader(new FileReader("map")));
+        LinkedList<CoinRegister> coinList = new LinkedList<>();
+        while (sc.hasNextLine()) {
+            String[] line = sc.nextLine().trim().split(" ");
+            for (String item : line) {
+                if (item.equals("1")) {
+                    coinList.add(CoinRegister.EMPTY);
+                }
+            }
+        }
+        int numberOfCoins = (int)(coinList.size() * COIN_RATIO);
+        for (int i=0;i<numberOfCoins;i++) {
+            coinList.set(i, CoinRegister.COIN);
+        }
+        Collections.shuffle(coinList);
+        return coinList;
+    }
+
+
     public void initMap() {
         Scanner sc = null;
+        Iterator coinIterator = null;
         try {
             sc = new Scanner(new BufferedReader(new FileReader("map")));
+            LinkedList<CoinRegister> coinRegister = shuffleCoins();
+            coinIterator = coinRegister.iterator();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+
         while (sc.hasNextLine()) {
             for (int i = 0; i < map.length; i++) {
                 String[] line = sc.nextLine().trim().split(" ");
@@ -39,7 +67,12 @@ public class Field {
                             map[i][j] = new FieldObject(Style.WALL);
                             break;
                         case "1":
-                            map[i][j] = new FieldObject(Style.EMPTY);
+                            if (coinIterator.hasNext() && coinIterator.next() == CoinRegister.COIN) {
+                                map[i][j] = new FieldObject(Style.COIN);
+                                numberOfCoins ++;
+                            } else {
+                                map[i][j] = new FieldObject(Style.EMPTY);
+                            }
                             break;
                         case "2":
                             map[i][j] = new FieldObject(Style.EMPTY);
@@ -48,6 +81,7 @@ public class Field {
                         case "3":
                             map[i][j] = new FieldObject(Style.EMPTY);
                             playerSpawnPoint = new Coordinate(i, j);
+
                     }
                     renderObject(j, i);
                 }
@@ -82,14 +116,25 @@ public class Field {
         if (!checkPosition(nextX, nextY)) {
             return false;
         }
-        createObject(prevX, prevY, new FieldObject(Style.EMPTY));  // Pop coin back here
+        if (obj.getStyle() == Style.ENEMY && ((Enemy)obj).isStandingOnCoin()) {
+            ((Enemy)obj).setStandingOnCoin(false);
+            createObject(prevX, prevY, new FieldObject(Style.COIN));
+        } else {
+            createObject(prevX, prevY, new FieldObject(Style.EMPTY));
+        }
         FieldObject overriddenObject = map[nextY][nextX];
         createObject(nextX, nextY, obj);
 
         if (overriddenObject.getStyle() == Style.PLAYER) {
             ((Player)overriddenObject).terminate();
+        } else if (overriddenObject.getStyle() == Style.COIN) {
+            if (obj.getStyle() == Style.PLAYER) {
+                numberOfCoins--;
+                if (numberOfCoins == 0) {((Player)obj).win();}
+            } else {
+                ((Enemy)obj).setStandingOnCoin(true);
+            }
         }
-        // INSERT COIN LOGIC HERE
         return true;
     }
 
@@ -118,4 +163,8 @@ final class Coordinate {
         this.x = x;
         this.y = y;
     }
+}
+
+enum CoinRegister {
+    COIN,EMPTY
 }
