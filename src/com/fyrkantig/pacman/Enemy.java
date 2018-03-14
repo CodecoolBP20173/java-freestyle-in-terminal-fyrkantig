@@ -1,6 +1,5 @@
 package com.fyrkantig.pacman;
 
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadLocalRandom;
@@ -17,20 +16,33 @@ public class Enemy extends FieldObject implements Runnable {
     private MoveDirection currentDirection;
     private boolean isStandingOnCoin;
 
-    private static ScheduledThreadPoolExecutor enemies;
-    private static final int speed = 1000;
+    private static ScheduledThreadPoolExecutor enemyController;
+    private static LinkedList<Enemy> enemies = new LinkedList<>();
     private static final int initialDelay = 1000;
 
-    public static ScheduledThreadPoolExecutor releaseEnemies(Field field, Player target) {
+    public static void releaseEnemies(int speed, Field field, Player target) {
         LinkedList<Coordinate> spawnPoints = field.getSpawnPoints();
         int numberOfEnemies = spawnPoints.size();
-        enemies = new ScheduledThreadPoolExecutor(numberOfEnemies);
+        enemyController = new ScheduledThreadPoolExecutor(numberOfEnemies);
 
         for (int i = 0; i < numberOfEnemies; i++) {
             Coordinate coord = spawnPoints.get(i);
-            enemies.scheduleAtFixedRate(new Enemy(coord.x, coord.y, field, target), initialDelay, speed, MILLISECONDS);
+            Enemy newEnemy = new Enemy(coord.x, coord.y, field, target);
+            enemies.add(newEnemy);
+            enemyController.scheduleAtFixedRate(newEnemy, initialDelay, speed, MILLISECONDS);
         }
-        return enemies;
+    }
+
+    public static void stopEnemies() {
+        enemyController.shutdown();
+    }
+
+    public static void setEnemySpeed(int speed) {
+        stopEnemies();
+        enemyController = new ScheduledThreadPoolExecutor(enemies.size());
+        for (Enemy enemy : enemies) {
+            enemyController.scheduleAtFixedRate(enemy, 0, speed, MILLISECONDS);
+        }
     }
 
     public Enemy(int x, int y, Field field, Player target) {

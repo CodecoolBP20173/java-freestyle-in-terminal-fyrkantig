@@ -12,7 +12,7 @@ import java.util.Scanner;
 
 public class Field {
 
-    private static final double COIN_RATIO = 0.30;
+    private double coinRatio;
     private final int rows = 31;
     private final int columns = 53;
     private FieldObject[][] map;
@@ -22,9 +22,17 @@ public class Field {
     private Coordinate playerSpawnPoint;
     private int numberOfCoins;
 
-    public Field() {
+    public Field(double coinRatio) {
         map = new FieldObject[rows][columns];
+        this.coinRatio = coinRatio;
         initMap();
+    }
+
+    public void clearTerminal() {
+        term.resetStyle();
+        term.moveTo(1, 1);
+        term.clearScreen();
+        term.hideCursor(false);
     }
 
     private LinkedList<CoinRegister> shuffleCoins() throws FileNotFoundException {
@@ -38,7 +46,7 @@ public class Field {
                 }
             }
         }
-        int numberOfCoins = (int)(coinList.size() * COIN_RATIO);
+        int numberOfCoins = (int)(coinList.size() * coinRatio);
         for (int i=0;i<numberOfCoins;i++) {
             coinList.set(i, CoinRegister.COIN);
         }
@@ -166,5 +174,5 @@ final class Coordinate {
 }
 
 enum CoinRegister {
-    COIN,EMPTY
+    COIN, EMPTY
 }

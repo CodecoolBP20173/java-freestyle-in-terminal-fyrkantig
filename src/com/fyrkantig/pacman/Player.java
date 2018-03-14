@@ -8,7 +8,7 @@ public class Player extends FieldObject {
     private AtomicInteger xCoord;
     private AtomicInteger yCoord;
     private Field field;
-    private boolean isAlive = true;
+    private boolean isAlive;
 
     public Player(Field field) {
         super(Style.PLAYER);
@@ -56,6 +56,18 @@ public class Player extends FieldObject {
                 break;
             case 'd':
                 moveRight();
+                break;
+            case 27:
+                isAlive = false;
+                break;
+            case 'c':
+                Enemy.setEnemySpeed(1000);
+                break;
+            case 't':
+                Enemy.setEnemySpeed(50);
+                break;
+            case 'n':
+                Enemy.setEnemySpeed(200);
         }
     }
 
@@ -79,6 +91,7 @@ public class Player extends FieldObject {
     }
 
     public void startGame() {
+        isAlive = true;
         while (isAlive) {
             try {
                 if (System.in.available() > 0) {
