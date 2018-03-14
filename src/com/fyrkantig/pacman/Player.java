@@ -63,7 +63,10 @@ public class Player extends FieldObject {
         isAlive = false;
     }
 
-    public synchronized void win() {}
+    public synchronized void win() {
+        System.out.println("Gratz.");
+        isAlive = false;
+    }
 
     public boolean isAlive() {return isAlive;}
 
