@@ -21,10 +21,17 @@ public class Field {
     private LinkedList<Coordinate> spawnPoints = new LinkedList<>();
     private Coordinate playerSpawnPoint;
     private int numberOfCoins;
+    private final String SCORE_BOARD = "Remaining Coins: ";
 
     public Field() {
         map = new FieldObject[rows][columns];
         initMap();
+        initScoreBoard();
+    }
+
+    private void initScoreBoard() {
+        term.resetStyle();
+        term.putString(60, 3, SCORE_BOARD + numberOfCoins);
     }
 
     private LinkedList<CoinRegister> shuffleCoins() throws FileNotFoundException {
@@ -38,8 +45,8 @@ public class Field {
                 }
             }
         }
-        int numberOfCoins = (int)(coinList.size() * COIN_RATIO);
-        for (int i=0;i<numberOfCoins;i++) {
+        int numberOfCoins = (int) (coinList.size() * COIN_RATIO);
+        for (int i = 0; i < numberOfCoins; i++) {
             coinList.set(i, CoinRegister.COIN);
         }
         Collections.shuffle(coinList);
@@ -69,7 +76,7 @@ public class Field {
                         case "1":
                             if (coinIterator.hasNext() && coinIterator.next() == CoinRegister.COIN) {
                                 map[i][j] = new FieldObject(Style.COIN);
-                                numberOfCoins ++;
+                                numberOfCoins++;
                             } else {
                                 map[i][j] = new FieldObject(Style.EMPTY);
                             }
@@ -116,8 +123,8 @@ public class Field {
         if (!checkPosition(nextX, nextY)) {
             return false;
         }
-        if (obj.getStyle() == Style.ENEMY && ((Enemy)obj).isStandingOnCoin()) {
-            ((Enemy)obj).setStandingOnCoin(false);
+        if (obj.getStyle() == Style.ENEMY && ((Enemy) obj).isStandingOnCoin()) {
+            ((Enemy) obj).setStandingOnCoin(false);
             createObject(prevX, prevY, new FieldObject(Style.COIN));
         } else {
             createObject(prevX, prevY, new FieldObject(Style.EMPTY));
@@ -126,16 +133,24 @@ public class Field {
         createObject(nextX, nextY, obj);
 
         if (overriddenObject.getStyle() == Style.PLAYER) {
-            ((Player)overriddenObject).terminate();
+            ((Player) overriddenObject).terminate();
         } else if (overriddenObject.getStyle() == Style.COIN) {
             if (obj.getStyle() == Style.PLAYER) {
-                numberOfCoins--;
-                if (numberOfCoins == 0) {((Player)obj).win();}
+                changeScore((Player) obj);
             } else {
-                ((Enemy)obj).setStandingOnCoin(true);
+                ((Enemy) obj).setStandingOnCoin(true);
             }
         }
         return true;
+    }
+
+    private void changeScore(Player obj) {
+        numberOfCoins--;
+        term.resetStyle();
+        term.putString(60+SCORE_BOARD.length(),3,Integer.toString(numberOfCoins) + "  ");
+        if (numberOfCoins == 0) {
+            obj.win();
+        }
     }
 
     private boolean checkPosition(int x, int y) {
@@ -146,10 +161,18 @@ public class Field {
 
     public synchronized LinkedList<MoveDirection> getValidDirections(int x, int y) {
         LinkedList<MoveDirection> validDirections = new LinkedList<>();
-        if (checkPosition(x, y - 1 )) {validDirections.add(MoveDirection.UP);}
-        if (checkPosition(x, y + 1 )) {validDirections.add(MoveDirection.DOWN);}
-        if (checkPosition(x - 1, y )) {validDirections.add(MoveDirection.LEFT);}
-        if (checkPosition(x + 1, y )) {validDirections.add(MoveDirection.RIGHT);}
+        if (checkPosition(x, y - 1)) {
+            validDirections.add(MoveDirection.UP);
+        }
+        if (checkPosition(x, y + 1)) {
+            validDirections.add(MoveDirection.DOWN);
+        }
+        if (checkPosition(x - 1, y)) {
+            validDirections.add(MoveDirection.LEFT);
+        }
+        if (checkPosition(x + 1, y)) {
+            validDirections.add(MoveDirection.RIGHT);
+        }
         return validDirections;
     }
 
@@ -166,5 +189,5 @@ final class Coordinate {
 }
 
 enum CoinRegister {
-    COIN,EMPTY
+    COIN, EMPTY
 }
