@@ -5,6 +5,8 @@ import com.fyrkantig.term.Terminal;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Scanner;
@@ -25,7 +27,27 @@ public class Field {
         initMap();
     }
 
-    private void initMap() {
+    private LinkedList<CoinRegister> shuffleCoins() throws FileNotFoundException {
+        Scanner sc = new Scanner(new BufferedReader(new FileReader("map")));
+        LinkedList<CoinRegister> coinList = new LinkedList<>();
+        while (sc.hasNextLine()) {
+            String[] line = sc.nextLine().trim().split(" ");
+            for (String item : line) {
+                if (item.equals("1")) {
+                    coinList.add(CoinRegister.EMPTY);
+                }
+            }
+        }
+        int numberOfCoins = (int)(coinList.size() * 0.30);
+        for (int i=0;i<numberOfCoins;i++) {
+            coinList.set(i, CoinRegister.COIN);
+        }
+        Collections.shuffle(coinList);
+        return coinList;
+    }
+
+
+    public void initMap() {
         Scanner sc = null;
         try {
             sc = new Scanner(new BufferedReader(new FileReader("map")));
@@ -141,4 +163,8 @@ final class Coordinate {
         this.x = x;
         this.y = y;
     }
+}
+
+enum CoinRegister {
+    COIN,EMPTY
 }
