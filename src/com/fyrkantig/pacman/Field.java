@@ -5,6 +5,7 @@ import com.fyrkantig.term.Terminal;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Scanner;
 
@@ -28,9 +29,13 @@ public class Field {
         Scanner sc = null;
         try {
             sc = new Scanner(new BufferedReader(new FileReader("map")));
+            LinkedList<CoinRegister> coinRegister = shuffleCoins();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+
+        Iterator coinIterator = coinRegister.iterator();
+
         while (sc.hasNextLine()) {
             for (int i = 0; i < map.length; i++) {
                 String[] line = sc.nextLine().trim().split(" ");
@@ -40,7 +45,12 @@ public class Field {
                             map[i][j] = new FieldObject(Style.WALL);
                             break;
                         case "1":
-                            map[i][j] = new FieldObject(Style.EMPTY);
+                            if (coinIterator.hasNext() && coinIterator.next() == COIN) {
+                                map[i][j] = new FieldObject(Style.COIN);
+                                numberOfCoins ++;
+                            } else {
+                                map[i][j] = new FieldObject(Style.EMPTY);
+                            }
                             break;
                         case "2":
                             map[i][j] = new FieldObject(Style.EMPTY);
@@ -49,10 +59,7 @@ public class Field {
                         case "3":
                             map[i][j] = new FieldObject(Style.EMPTY);
                             playerSpawnPoint = new Coordinate(i, j);
-                            break;
-                        case "4":
-                            map[i][j] = new FieldObject(Style.COIN);
-                            numberOfCoins ++;
+
                     }
                     renderObject(j, i);
                 }
