@@ -76,7 +76,8 @@ public class Player extends FieldObject {
     }
 
     public synchronized void win() {
-        System.out.println("Gratz.");
+        Enemy.stopEnemies();
+        field.printWin();
         isAlive = false;
     }
 

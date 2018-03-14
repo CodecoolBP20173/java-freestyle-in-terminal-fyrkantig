@@ -1,5 +1,6 @@
 package com.fyrkantig.pacman;
 
+import com.fyrkantig.term.Color;
 import com.fyrkantig.term.Terminal;
 
 import java.io.BufferedReader;
@@ -42,6 +43,20 @@ public class Field {
         term.hideCursor(false);
     }
 
+    public void printWin() {
+        term.setFgColor(Color.BLACK);
+        term.setFgColor(Color.GREEN);
+        term.clearScreen();
+        for (int i = 0; i < AsciiArts.WIN.length; i++) {
+            term.putString(20, 5 + i, AsciiArts.WIN[i]);
+        }
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
     private LinkedList<CoinRegister> shuffleCoins() throws FileNotFoundException {
         Scanner sc = new Scanner(new BufferedReader(new FileReader("map")));
         LinkedList<CoinRegister> coinList = new LinkedList<>();
@@ -53,7 +68,7 @@ public class Field {
                 }
             }
         }
-        int numberOfCoins = (int) (coinList.size() * COIN_RATIO);
+        int numberOfCoins = (int) (coinList.size() * coinRatio);
         for (int i = 0; i < numberOfCoins; i++) {
             coinList.set(i, CoinRegister.COIN);
         }
