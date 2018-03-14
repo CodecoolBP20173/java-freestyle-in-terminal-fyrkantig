@@ -20,9 +20,9 @@ public class FieldObject {
 enum Style {
 
     WALL(' ', Color.BLUE, Color.BLUE),
-    PLAYER('P', Color.YELLOW, Color.BLACK),
+    PLAYER('C', Color.YELLOW, Color.BLACK),
     ENEMY('E', Color.WHITE, Color.BLACK),
-    COIN('$', Color.MAGENTA, Color.BLACK),
+    COIN('$', Color.GREEN, Color.BLACK),
     EMPTY(' ', Color.BLACK, Color.BLACK);
 
     public final char chr;

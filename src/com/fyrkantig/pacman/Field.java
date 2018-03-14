@@ -1,5 +1,6 @@
 package com.fyrkantig.pacman;
 
+import com.fyrkantig.term.Color;
 import com.fyrkantig.term.Terminal;
 
 import java.io.BufferedReader;
@@ -12,7 +13,7 @@ import java.util.Scanner;
 
 public class Field {
 
-    private static final double COIN_RATIO = 0.30;
+    private double coinRatio;
     private final int rows = 31;
     private final int columns = 53;
     private FieldObject[][] map;
@@ -23,8 +24,9 @@ public class Field {
     private int numberOfCoins;
     private final String SCORE_BOARD = "Remaining Coins: ";
 
-    public Field() {
+    public Field(double coinRatio) {
         map = new FieldObject[rows][columns];
+        this.coinRatio = coinRatio;
         initMap();
         initScoreBoard();
     }
@@ -32,6 +34,27 @@ public class Field {
     private void initScoreBoard() {
         term.resetStyle();
         term.putString(60, 3, SCORE_BOARD + numberOfCoins);
+    }
+
+    public void clearTerminal() {
+        term.resetStyle();
+        term.moveTo(1, 1);
+        term.clearScreen();
+        term.hideCursor(false);
+    }
+
+    public void printWin() {
+        term.setFgColor(Color.BLACK);
+        term.setFgColor(Color.GREEN);
+        term.clearScreen();
+        for (int i = 0; i < AsciiArts.WIN.length; i++) {
+            term.putString(20, 5 + i, AsciiArts.WIN[i]);
+        }
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     private LinkedList<CoinRegister> shuffleCoins() throws FileNotFoundException {
@@ -45,7 +68,7 @@ public class Field {
                 }
             }
         }
-        int numberOfCoins = (int) (coinList.size() * COIN_RATIO);
+        int numberOfCoins = (int) (coinList.size() * coinRatio);
         for (int i = 0; i < numberOfCoins; i++) {
             coinList.set(i, CoinRegister.COIN);
         }
@@ -161,18 +184,10 @@ public class Field {
 
     public synchronized LinkedList<MoveDirection> getValidDirections(int x, int y) {
         LinkedList<MoveDirection> validDirections = new LinkedList<>();
-        if (checkPosition(x, y - 1)) {
-            validDirections.add(MoveDirection.UP);
-        }
-        if (checkPosition(x, y + 1)) {
-            validDirections.add(MoveDirection.DOWN);
-        }
-        if (checkPosition(x - 1, y)) {
-            validDirections.add(MoveDirection.LEFT);
-        }
-        if (checkPosition(x + 1, y)) {
-            validDirections.add(MoveDirection.RIGHT);
-        }
+        if (checkPosition(x, y - 1 )) {validDirections.add(MoveDirection.UP);}
+        if (checkPosition(x, y + 1 )) {validDirections.add(MoveDirection.DOWN);}
+        if (checkPosition(x - 1, y )) {validDirections.add(MoveDirection.LEFT);}
+        if (checkPosition(x + 1, y )) {validDirections.add(MoveDirection.RIGHT);}
         return validDirections;
     }
 
