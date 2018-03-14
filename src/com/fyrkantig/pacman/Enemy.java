@@ -40,7 +40,6 @@ public class Enemy extends FieldObject implements Runnable {
         this.field = field;
         this.target = target;
         field.createObject(x, y, this);
-        searchNewRoute();
         // Add dinamically to pool
     }
 

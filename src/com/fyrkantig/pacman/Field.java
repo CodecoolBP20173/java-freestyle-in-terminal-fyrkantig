@@ -5,7 +5,6 @@ import com.fyrkantig.term.Terminal;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -13,6 +12,7 @@ import java.util.Scanner;
 
 public class Field {
 
+    private static final double COIN_RATIO = 0.30;
     private final int rows = 31;
     private final int columns = 53;
     private FieldObject[][] map;
@@ -38,7 +38,7 @@ public class Field {
                 }
             }
         }
-        int numberOfCoins = (int)(coinList.size() * 0.30);
+        int numberOfCoins = (int)(coinList.size() * COIN_RATIO);
         for (int i=0;i<numberOfCoins;i++) {
             coinList.set(i, CoinRegister.COIN);
         }
@@ -49,14 +49,14 @@ public class Field {
 
     public void initMap() {
         Scanner sc = null;
+        Iterator coinIterator = null;
         try {
             sc = new Scanner(new BufferedReader(new FileReader("map")));
             LinkedList<CoinRegister> coinRegister = shuffleCoins();
+            coinIterator = coinRegister.iterator();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-
-        Iterator coinIterator = coinRegister.iterator();
 
         while (sc.hasNextLine()) {
             for (int i = 0; i < map.length; i++) {
@@ -67,7 +67,7 @@ public class Field {
                             map[i][j] = new FieldObject(Style.WALL);
                             break;
                         case "1":
-                            if (coinIterator.hasNext() && coinIterator.next() == COIN) {
+                            if (coinIterator.hasNext() && coinIterator.next() == CoinRegister.COIN) {
                                 map[i][j] = new FieldObject(Style.COIN);
                                 numberOfCoins ++;
                             } else {
